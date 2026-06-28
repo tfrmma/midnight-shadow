@@ -56,7 +56,7 @@ impl ShadowEngine {
             latent_bad_debt: bad_debt,
             min_seizure: min_sz,
             first_touch_mev: (min_sz * (lif - 1.0) - GAS_COST_USD).max(0.0),
-            lif_max: lif,
+            blended_lif: lif,
             cliff_imminent: worst_lag >= CHAINLINK_DEVIATION && shadow_ltv > 1.0,
             full_liq_required: full_liq,
             overdue: pos.is_overdue(),
