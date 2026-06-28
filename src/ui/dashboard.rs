@@ -209,7 +209,7 @@ fn render_positions(
         Row::new(vec![
             Cell::from(a.market_id.clone()),
             Cell::from(format!("{:.3}", a.lltv_tier)),
-            Cell::from(format!("{:.3}x", a.lif_max)),
+            Cell::from(format!("{:.3}x", a.blended_lif)),
             Cell::from(format!("{:.2}%", a.oracle_ltv * 100.0)),
             Cell::from(Span::styled(
                 format!("{:.2}%", a.shadow_ltv * 100.0),
