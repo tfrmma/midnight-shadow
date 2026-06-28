@@ -10,12 +10,13 @@ const DUTCH_WINDOW_SECS: f64 = 900.0; // 15 minutes per whitepaper §4.4
 
 pub struct ShadowEngine;
 
-impl ShadowEngine {
-    pub fn new(_lltv: f64, _liq_bonus_bps: u32) -> Self {
-        // params now live in CollateralLeg — engine is stateless
+impl Default for ShadowEngine {
+    fn default() -> Self {
         Self
     }
+}
 
+impl ShadowEngine {
     pub async fn run(&self, state: Arc<RwLock<AppState>>) {
         loop {
             tokio::time::sleep(Duration::from_millis(100)).await;
