@@ -147,3 +147,113 @@ impl AppState {
         Self { positions, ..Default::default() }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn leg(lltv: f64, cursor: f64) -> CollateralLeg {
+        CollateralLeg { token: "ETH".into(), amount: 1.0, lltv, cursor, exchange_rate: 1.0 }
+    }
+
+    // LIFmax = 1 / (1 - γ·(1 - LLTV)) — whitepaper eq.4
+    #[test]
+    fn lif_max_086_050() {
+        // 1 / (1 - 0.5 × 0.14) = 1 / 0.93 ≈ 1.07527
+        assert!((leg(0.86, 0.50).lif_max() - 1.075_269).abs() < 1e-4);
+    }
+
+    #[test]
+    fn lif_max_080_050() {
+        // 1 / (1 - 0.5 × 0.20) = 1 / 0.90 ≈ 1.11111
+        assert!((leg(0.80, 0.50).lif_max() - 1.111_111).abs() < 1e-4);
+    }
+
+    #[test]
+    fn lif_max_077_025() {
+        // 1 / (1 - 0.25 × 0.23) = 1 / 0.9425 ≈ 1.06101
+        assert!((leg(0.77, 0.25).lif_max() - 1.061_007).abs() < 1e-4);
+    }
+
+    #[test]
+    fn lag_pct_downside_only() {
+        let l = leg(0.80, 0.50);
+        // Price dropped: oracle $3200, cex $2650 → lag = 550/3200
+        assert!((l.lag_pct(3200.0, 2650.0) - 550.0 / 3200.0).abs() < 1e-6);
+        // Price rose: no cliff risk for lenders
+        assert_eq!(l.lag_pct(3200.0, 3400.0), 0.0);
+    }
+
+    // ---------- sim position helpers ----------
+
+    fn weeth_pos() -> Position {
+        const B: f64 = 3_200.0;
+        Position {
+            market_id: "test".into(), loan_token: "USDC".into(),
+            debt: 20.0 * B * 1.001 * 0.740,
+            legs: vec![CollateralLeg { token: "weETH".into(), amount: 20.0, lltv: 0.86, cursor: 0.50, exchange_rate: 1.001 }],
+            maturity_ts: 1_759_276_800, rcf_threshold: 100.0,
+        }
+    }
+
+    fn wsteth_pos() -> Position {
+        const B: f64 = 3_200.0;
+        Position {
+            market_id: "test".into(), loan_token: "USDC".into(),
+            debt: 60.0 * B * 1.07 * 0.703,
+            legs: vec![CollateralLeg { token: "wstETH".into(), amount: 60.0, lltv: 0.80, cursor: 0.50, exchange_rate: 1.07 }],
+            maturity_ts: 1_759_276_800, rcf_threshold: 100.0,
+        }
+    }
+
+    fn multi_pos() -> Position {
+        const B: f64 = 3_200.0;
+        Position {
+            market_id: "test".into(), loan_token: "USDC".into(),
+            debt: (30.0 * B * 0.86 + 20.0 * B * 1.07 * 0.80) * 0.866,
+            legs: vec![
+                CollateralLeg { token: "ETH".into(),    amount: 30.0, lltv: 0.86, cursor: 0.50, exchange_rate: 1.0  },
+                CollateralLeg { token: "wstETH".into(), amount: 20.0, lltv: 0.80, cursor: 0.50, exchange_rate: 1.07 },
+            ],
+            maturity_ts: 1_759_276_800, rcf_threshold: 100.0,
+        }
+    }
+
+    // ---------- regression: sim positions at calibration prices ----------
+
+    #[test]
+    fn weeth_healthy_at_oracle_price() {
+        assert!(weeth_pos().health_ltv(3_200.0) < 1.0);
+    }
+
+    #[test]
+    fn weeth_liquidatable_at_crash_bottom() {
+        assert!(weeth_pos().health_ltv(2_650.0) > 1.0);
+    }
+
+    #[test]
+    fn weeth_no_bad_debt_at_crash() {
+        // Collateral still covers debt at $2,650 — liquidatable but not underwater
+        assert_eq!(weeth_pos().bad_debt(2_650.0), 0.0);
+    }
+
+    #[test]
+    fn wsteth_healthy_at_oracle_price() {
+        assert!(wsteth_pos().health_ltv(3_200.0) < 1.0);
+    }
+
+    #[test]
+    fn wsteth_liquidatable_at_crash_bottom() {
+        assert!(wsteth_pos().health_ltv(2_650.0) > 1.0);
+    }
+
+    #[test]
+    fn multi_healthy_at_oracle_price() {
+        assert!(multi_pos().health_ltv(3_200.0) < 1.0);
+    }
+
+    #[test]
+    fn multi_liquidatable_at_crash_bottom() {
+        assert!(multi_pos().health_ltv(2_650.0) > 1.0);
+    }
+}
