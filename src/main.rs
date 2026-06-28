@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
 
     let cex    = CexFeed::new(args.pair.clone(), args.sim);
     let oracle = OracleFeed::new(args.sim, args.oracle_lag_s);
-    let engine = ShadowEngine::new(0.0, 0); // params are per-leg now
+    let engine = ShadowEngine::default();
 
     let h1 = tokio::spawn({ let s = state.clone(); async move { cex.run(s).await } });
     let h2 = tokio::spawn({ let s = state.clone(); async move { oracle.run(s).await } });
