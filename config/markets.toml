@@ -1,0 +1,64 @@
+# Morpho Midnight market configuration
+# See CONTRIBUTING.md for how to add live markets once Midnight deploys on mainnet.
+
+[sim]
+crash_top_px    = 3200.0   # oracle base price — where the sim starts
+crash_bottom_px = 2650.0   # crash target — positions hit cliff zone here
+cycle_secs      = 300.0    # full crash cycle duration in seconds
+
+[engine]
+gas_cost_usd = 18.0        # estimated gas cost per liquidation tx in loan token
+
+# Sim positions calibrated at crash_top_px.
+# At crash_bottom_px: oracle h-LTV stays below 1.0, shadow h-LTV crosses above 1.0.
+# LLTV must be one of the 9 Morpho Blue tiers: 0.385, 0.5, 0.625, 0.77, 0.86, 0.915, 0.945, 0.965, 0.98
+# cursor must be 0.25 or 0.50 (liquidation cursor γ per whitepaper eq.4)
+
+[[markets]]
+market_id     = "weETH/USDC-Sep26"
+loan_token    = "USDC"
+debt          = 47408.0
+maturity_ts   = 1759276800
+rcf_threshold = 100.0
+
+[[markets.legs]]
+token         = "weETH"
+amount        = 20.0
+lltv          = 0.86
+cursor        = 0.50
+exchange_rate = 1.001   # weETH/ETH — roughly 1:1, slight premium
+
+[[markets]]
+market_id     = "wstETH/USDC-Sep26"
+loan_token    = "USDC"
+debt          = 144424.0
+maturity_ts   = 1759276800
+rcf_threshold = 100.0
+
+[[markets.legs]]
+token         = "wstETH"
+amount        = 60.0
+lltv          = 0.80
+cursor        = 0.50
+exchange_rate = 1.07    # wstETH/ETH — staking yield embedded
+
+[[markets]]
+market_id     = "ETH+wstETH/USDC-Sep26"
+loan_token    = "USDC"
+debt          = 118940.0
+maturity_ts   = 1759276800
+rcf_threshold = 100.0
+
+[[markets.legs]]
+token         = "ETH"
+amount        = 30.0
+lltv          = 0.86
+cursor        = 0.50
+exchange_rate = 1.0
+
+[[markets.legs]]
+token         = "wstETH"
+amount        = 20.0
+lltv          = 0.80
+cursor        = 0.50
+exchange_rate = 1.07
