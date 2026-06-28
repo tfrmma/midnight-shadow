@@ -6,7 +6,7 @@ use std::path::PathBuf;
 #[command(about = "Shadow LTV monitor for Morpho Midnight — quantifies latent bad debt before oracle crystallization")]
 pub struct Args {
     /// Path to markets config file
-    #[arg(short, long, default_value = "markets.toml")]
+    #[arg(short, long, default_value = "config/markets.toml")]
     pub markets: PathBuf,
 
     /// Binance trading pair (live mode only)
