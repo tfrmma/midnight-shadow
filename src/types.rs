@@ -142,70 +142,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new() -> Self {
-        Self { positions: sim_positions(), ..Default::default() }
+    pub fn new(positions: Vec<Position>) -> Self {
+        Self { positions, ..Default::default() }
     }
-}
-
-// Calibrated at BASE_ETH = $3,200 oracle price. At crash bottom (~$2,650):
-// - health_ltv(oracle) stays 86-88% (below 1.0 → appears healthy)
-// - health_ltv(shadow) hits 103-106% (above 1.0 → liquidatable in reality)
-// Positions include one multi-collateral market to demonstrate the blended LIF.
-fn sim_positions() -> Vec<Position> {
-    const BASE: f64 = 3_200.0;
-    vec![
-        Position {
-            market_id: "weETH/USDC-Sep26".into(),
-            loan_token: "USDC".into(),
-            debt: 20.0 * BASE * 1.001 * 0.740,
-            legs: vec![CollateralLeg {
-                token: "weETH".into(),
-                amount: 20.0,
-                lltv: 0.86,
-                cursor: 0.50,
-                exchange_rate: 1.001,
-            }],
-            maturity_ts: 1_759_276_800,
-            rcf_threshold: 100.0,
-        },
-        Position {
-            market_id: "wstETH/USDC-Sep26".into(),
-            loan_token: "USDC".into(),
-            debt: 60.0 * BASE * 1.07 * 0.703,
-            legs: vec![CollateralLeg {
-                token: "wstETH".into(),
-                amount: 60.0,
-                lltv: 0.80,
-                cursor: 0.50,
-                exchange_rate: 1.07,
-            }],
-            maturity_ts: 1_759_276_800,
-            rcf_threshold: 100.0,
-        },
-        Position {
-            market_id: "ETH+wstETH/USDC-Sep26".into(),
-            loan_token: "USDC".into(),
-            // 0.866 × maxDebt(oracle) where maxDebt = 30×BASE×0.86 + 20×BASE×1.07×0.80
-            // oracle h-LTV ~86.6%, shadow h-LTV ~104.6% at crash bottom ($2,650)
-            debt: (30.0 * BASE * 0.86 + 20.0 * BASE * 1.07 * 0.80) * 0.866,
-            legs: vec![
-                CollateralLeg {
-                    token: "ETH".into(),
-                    amount: 30.0,
-                    lltv: 0.86,
-                    cursor: 0.50,
-                    exchange_rate: 1.0,
-                },
-                CollateralLeg {
-                    token: "wstETH".into(),
-                    amount: 20.0,
-                    lltv: 0.80,
-                    cursor: 0.50,
-                    exchange_rate: 1.07,
-                },
-            ],
-            maturity_ts: 1_759_276_800,
-            rcf_threshold: 100.0,
-        },
-    ]
 }
