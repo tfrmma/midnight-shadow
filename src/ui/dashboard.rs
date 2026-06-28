@@ -197,11 +197,12 @@ fn render_positions(
         };
 
         // Dutch auction overrides normal MEV display
-        let mev_cell = if let Some(dutch_lif) = a.dutch_lif {
-            Cell::from(Span::styled(
-                format!("DUTCH {:.3}x", dutch_lif),
-                Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD),
-            ))
+        let mev_cell = if let Some(dl) = a.dutch_lif {
+            let label = match a.dutch_mev {
+                Some(m) if m > 0.0 => format!("${:.0} DUTCH {:.3}x", m, dl),
+                _ => format!("DUTCH {:.3}x", dl),
+            };
+            Cell::from(Span::styled(label, Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD)))
         } else {
             mev_cell
         };
