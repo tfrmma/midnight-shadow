@@ -5,18 +5,16 @@ use tokio::sync::RwLock;
 use crate::types::{AppState, Position, ShadowAnalysis};
 
 const CHAINLINK_DEVIATION: f64 = 0.005;
-const GAS_COST_USD: f64 = 18.0;
 const DUTCH_WINDOW_SECS: f64 = 900.0; // 15 minutes per whitepaper §4.4
 
-pub struct ShadowEngine;
-
-impl Default for ShadowEngine {
-    fn default() -> Self {
-        Self
-    }
+pub struct ShadowEngine {
+    gas_cost_usd: f64,
 }
 
 impl ShadowEngine {
+    pub fn new(gas_cost_usd: f64) -> Self {
+        Self { gas_cost_usd }
+    }
     pub async fn run(&self, state: Arc<RwLock<AppState>>) {
         loop {
             tokio::time::sleep(Duration::from_millis(100)).await;
@@ -65,7 +63,7 @@ impl ShadowEngine {
             worst_lag_pct: worst_lag,
             latent_bad_debt: bad_debt,
             min_seizure: min_sz,
-            first_touch_mev: (effective_seizure * (lif - 1.0) - GAS_COST_USD).max(0.0),
+            first_touch_mev: (effective_seizure * (lif - 1.0) - self.gas_cost_usd).max(0.0),
             blended_lif: lif,
             cliff_imminent: worst_lag >= CHAINLINK_DEVIATION && shadow_ltv > 1.0,
             full_liq_required: full_liq,
