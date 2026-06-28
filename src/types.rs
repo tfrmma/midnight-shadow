@@ -129,7 +129,8 @@ pub struct ShadowAnalysis {
     pub cliff_imminent: bool,  // lag > deviation threshold AND shadow liquidatable
     pub full_liq_required: bool,
     pub overdue: bool,
-    pub dutch_lif: Option<f64>, // current LIF in Dutch auction window (post-maturity)
+    pub dutch_lif: Option<f64>,  // current LIF in Dutch auction window (post-maturity)
+    pub dutch_mev: Option<f64>,  // capturable MEV at current dutch_lif, None if not overdue
     pub lltv_tier: f64,         // max LLTV across legs for risk display
 }
 
