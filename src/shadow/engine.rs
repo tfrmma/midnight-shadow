@@ -56,6 +56,14 @@ impl ShadowEngine {
             min_sz
         };
 
+        let dutch_lif_val = post_maturity_lif(pos.maturity_ts, lif);
+        let dutch_mev = dutch_lif_val.map(|dl| {
+            if dl <= 1.0 || total_col <= 0.0 { return 0.0; }
+            let d_rem = pos.debt - bad_debt;
+            let dutch_available = d_rem.min(total_col / dl);
+            (dutch_available * (dl - 1.0) - self.gas_cost_usd).max(0.0)
+        });
+
         ShadowAnalysis {
             market_id: pos.market_id.clone(),
             oracle_ltv,
@@ -68,7 +76,8 @@ impl ShadowEngine {
             cliff_imminent: worst_lag >= CHAINLINK_DEVIATION && shadow_ltv > 1.0,
             full_liq_required: full_liq,
             overdue: pos.is_overdue(),
-            dutch_lif: post_maturity_lif(pos.maturity_ts, lif),
+            dutch_lif: dutch_lif_val,
+            dutch_mev,
             lltv_tier: pos.max_lltv_tier(),
         }
     }
