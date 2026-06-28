@@ -46,7 +46,17 @@ impl ShadowEngine {
         let worst_lag   = pos.worst_lag_pct(oracle_eth, cex_eth);
         let bad_debt    = pos.bad_debt(cex_eth);
         let lif         = blended_lif(pos, cex_eth);
+        let total_col   = pos.total_collateral(cex_eth);
         let (min_sz, full_liq) = seizure_params(pos, cex_eth, bad_debt, lif);
+
+        // When full liq is required, the liquidator can't repay more debt than
+        // the collateral can cover at the bonus rate: effective_seizure = min(d_rem, total_col / LIF).
+        // Using d_rem directly overestimates MEV when d_rem > total_col / LIF.
+        let effective_seizure = if full_liq && lif > 0.0 {
+            min_sz.min(total_col / lif)
+        } else {
+            min_sz
+        };
 
         ShadowAnalysis {
             market_id: pos.market_id.clone(),
@@ -55,7 +65,7 @@ impl ShadowEngine {
             worst_lag_pct: worst_lag,
             latent_bad_debt: bad_debt,
             min_seizure: min_sz,
-            first_touch_mev: (min_sz * (lif - 1.0) - GAS_COST_USD).max(0.0),
+            first_touch_mev: (effective_seizure * (lif - 1.0) - GAS_COST_USD).max(0.0),
             blended_lif: lif,
             cliff_imminent: worst_lag >= CHAINLINK_DEVIATION && shadow_ltv > 1.0,
             full_liq_required: full_liq,
