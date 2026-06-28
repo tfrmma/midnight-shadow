@@ -160,7 +160,6 @@ Keys: `up/down` navigate, `q` quit.
 - Sim positions treat weETH/wstETH exchange rates as static. In production each has its own on-chain oracle: stale exchange rates were the direct attack vector in the rsETH/Aave contagion (April 2026).
 - Live oracle feed is a stub. Will use alloy + `AggregatorV3Interface` once Midnight has mainnet market addresses.
 - MEV estimates assume no competition. In a live cliff event, the first-touch block will be a private bundle race via Flashbots/MEV-Boost.
-- Blended LIF assumes proportional seizure across legs. In practice liquidators will target the leg with highest LIF first.
 
 Research and monitoring tool, not a production liquidation bot.
 
@@ -170,4 +169,3 @@ Research and monitoring tool, not a production liquidation bot.
 
 - [Morpho Midnight Whitepaper](https://morpho.org/whitepapers/midnight-whitepaper.pdf)
 - [morpho-org/midnight](https://github.com/morpho-org/midnight)
-- [Block Analitica: Midnight parameter analysis](https://blockanalitica.com)
