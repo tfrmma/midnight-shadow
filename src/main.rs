@@ -1,5 +1,6 @@
 mod config;
 mod feeds;
+mod markets;
 mod shadow;
 mod types;
 mod ui;
@@ -23,16 +24,20 @@ async fn main() -> Result<()> {
         .init();
 
     let args = Args::parse();
+
+    let cfg = markets::load(&args.markets)?;
+    let positions = markets::into_positions(&cfg);
+
     info!(
-        "midnight-shadow | sim={} pair={} oracle_lag_mean={}s",
-        args.sim, args.pair, args.oracle_lag_s
+        "midnight-shadow | markets={} sim={} oracle_lag_mean={}s",
+        positions.len(), args.sim, args.oracle_lag_s
     );
 
-    let state = Arc::new(RwLock::new(AppState::new()));
+    let state = Arc::new(RwLock::new(AppState::new(positions)));
 
-    let cex    = CexFeed::new(args.pair.clone(), args.sim);
+    let cex    = CexFeed::new(args.pair.clone(), args.sim, cfg.sim.clone());
     let oracle = OracleFeed::new(args.sim, args.oracle_lag_s);
-    let engine = ShadowEngine::default();
+    let engine = ShadowEngine::new(cfg.engine.gas_cost_usd);
 
     let h1 = tokio::spawn({ let s = state.clone(); async move { cex.run(s).await } });
     let h2 = tokio::spawn({ let s = state.clone(); async move { oracle.run(s).await } });
