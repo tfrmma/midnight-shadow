@@ -125,7 +125,7 @@ pub struct ShadowAnalysis {
     pub latent_bad_debt: f64,  // debt - total_collateral(shadow); only > 0 when truly underwater
     pub min_seizure: f64,      // Δ_min to restore health; may be clipped at remaining_debt
     pub first_touch_mev: f64,  // Δ_min × (LIF - 1) - gas
-    pub lif_max: f64,          // blended LIF across legs
+    pub blended_lif: f64,      // collateral-weighted LIF across legs
     pub cliff_imminent: bool,  // lag > deviation threshold AND shadow liquidatable
     pub full_liq_required: bool,
     pub overdue: bool,
