@@ -7,17 +7,11 @@ use tokio::sync::RwLock;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::error;
 
+use crate::markets::SimConfig;
 use crate::types::{AppState, CexSnapshot};
 
 const WS_BASE: &str = "wss://stream.binance.com:9443/ws";
 const RECONNECT_MS: u64 = 2_000;
-
-// crash scenario constants — ETH stable at $3,200, drops to $2,650 over 60s.
-// positions are calibrated at $3,200 oracle price, so at bottom they're in
-// 91-95% shadow LTV range: liquidatable in CEX reality, invisible on-chain.
-const PRE_CRASH_PX: f64 = 3_200.0;
-const CRASH_BOTTOM_PX: f64 = 2_650.0;
-const CYCLE_SECS: f64 = 300.0;
 
 #[derive(Deserialize)]
 struct BookTicker {
@@ -30,11 +24,12 @@ struct BookTicker {
 pub struct CexFeed {
     pair: String,
     sim: bool,
+    sim_cfg: SimConfig,
 }
 
 impl CexFeed {
-    pub fn new(pair: String, sim: bool) -> Self {
-        Self { pair: pair.to_lowercase(), sim }
+    pub fn new(pair: String, sim: bool, sim_cfg: SimConfig) -> Self {
+        Self { pair: pair.to_lowercase(), sim, sim_cfg }
     }
 
     pub async fn run(&self, state: Arc<RwLock<AppState>>) {
@@ -52,8 +47,9 @@ impl CexFeed {
 
     async fn run_crash_scenario(&self, state: Arc<RwLock<AppState>>) {
         let start = Instant::now();
+        let cfg = &self.sim_cfg;
         loop {
-            let price = crash_price(start.elapsed().as_secs_f64());
+            let price = crash_price(start.elapsed().as_secs_f64(), cfg);
             state.write().await.cex = Some(CexSnapshot {
                 bid: price * (1.0 - 0.00008),
                 ask: price * (1.0 + 0.00008),
@@ -92,18 +88,20 @@ impl CexFeed {
     }
 }
 
-fn crash_price(t: f64) -> f64 {
-    let phase = t % CYCLE_SECS;
+fn crash_price(t: f64, cfg: &SimConfig) -> f64 {
+    let phase = t % cfg.cycle_secs;
+    let top   = cfg.crash_top_px;
+    let bot   = cfg.crash_bottom_px;
+
     if phase < 20.0 {
-        PRE_CRASH_PX
+        top
     } else if phase < 80.0 {
         let p = (phase - 20.0) / 60.0;
-        PRE_CRASH_PX - (PRE_CRASH_PX - CRASH_BOTTOM_PX) * p
+        top - (top - bot) * p
     } else if phase < 240.0 {
-        // partial recovery — still deep in cliff territory
         let p = (phase - 80.0) / 160.0;
-        CRASH_BOTTOM_PX + (PRE_CRASH_PX - CRASH_BOTTOM_PX) * 0.12 * p
+        bot + (top - bot) * 0.12 * p
     } else {
-        CRASH_BOTTOM_PX + (PRE_CRASH_PX - CRASH_BOTTOM_PX) * 0.12
+        bot + (top - bot) * 0.12
     }
 }
