@@ -185,7 +185,9 @@ fn sim_positions() -> Vec<Position> {
         Position {
             market_id: "ETH+wstETH/USDC-Sep26".into(),
             loan_token: "USDC".into(),
-            debt: 119_000.0,
+            // 0.866 × maxDebt(oracle) where maxDebt = 30×BASE×0.86 + 20×BASE×1.07×0.80
+            // oracle h-LTV ~86.6%, shadow h-LTV ~104.6% at crash bottom ($2,650)
+            debt: (30.0 * BASE * 0.86 + 20.0 * BASE * 1.07 * 0.80) * 0.866,
             legs: vec![
                 CollateralLeg {
                     token: "ETH".into(),
