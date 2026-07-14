@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "midnight-shadow")]
-#[command(about = "Shadow LTV monitor for Morpho Midnight — quantifies latent bad debt before oracle crystallization")]
+#[command(about = "Shadow LTV monitor for Morpho Midnight quantifies latent bad debt before oracle crystallization")]
 pub struct Args {
     /// Path to markets config file
     #[arg(short, long, default_value = "config/markets.toml")]
@@ -13,7 +13,7 @@ pub struct Args {
     #[arg(short, long, default_value = "ETHUSDC")]
     pub pair: String,
 
-    /// Simulation mode — programmatic crash scenario, no RPC or WebSocket needed
+    /// Simulation mode programmatic crash scenario, no RPC or WebSocket needed
     #[arg(short, long, default_value_t = true)]
     pub sim: bool,
 
