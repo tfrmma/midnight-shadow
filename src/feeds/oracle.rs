@@ -8,7 +8,7 @@ use crate::types::{AppState, OracleSnapshot};
 const SIM_BASE_PRICE: f64 = 3_200.0;
 const DEVIATION_THRESHOLD: f64 = 0.005;
 
-// Chainlink nodes don't fire deterministically — they sample at their own cadence
+// Chainlink nodes don't fire deterministically they sample at their own cadence
 // and aggregate. Actual update timing is stochastic within [threshold_age, heartbeat].
 // We model this as: once deviation threshold is crossed, fire in Uniform[lag_min, lag_max]
 // where lag_min = 0.6×lag_secs, lag_max = 1.4×lag_secs.
@@ -74,7 +74,7 @@ impl OracleFeed {
                 fire_delay = Some(stochastic_fire_delay(self.lag_secs, seed));
             }
 
-            // Price recovered above threshold — reset
+            // Price recovered above threshold reset
             if lag_pct < DEVIATION_THRESHOLD * 0.8 && threshold_crossed_at.is_some() {
                 threshold_crossed_at = None;
                 fire_delay = None;
@@ -84,7 +84,7 @@ impl OracleFeed {
                 let delay = fire_delay?;
                 let elapsed = t.elapsed();
                 if elapsed >= delay {
-                    None // fire is overdue — oracle update imminent
+                    None // fire is overdue oracle update imminent
                 } else {
                     Some((delay - elapsed).as_secs_f64())
                 }
