@@ -2,8 +2,8 @@
 # See CONTRIBUTING.md for how to add live markets once Midnight deploys on mainnet.
 
 [sim]
-crash_top_px    = 3200.0   # oracle base price — where the sim starts
-crash_bottom_px = 2650.0   # crash target — positions hit cliff zone here
+crash_top_px    = 3200.0   # oracle base price where the sim starts
+crash_bottom_px = 2650.0   # crash target positions hit cliff zone here
 cycle_secs      = 300.0    # full crash cycle duration in seconds
 
 [engine]
@@ -26,7 +26,7 @@ token         = "weETH"
 amount        = 20.0
 lltv          = 0.86
 cursor        = 0.50
-exchange_rate = 1.001   # weETH/ETH — roughly 1:1, slight premium
+exchange_rate = 1.001   # weETH/ETH roughly 1:1, slight premium
 
 [[markets]]
 market_id     = "wstETH/USDC-Sep26"
@@ -40,7 +40,7 @@ token         = "wstETH"
 amount        = 60.0
 lltv          = 0.80
 cursor        = 0.50
-exchange_rate = 1.07    # wstETH/ETH — staking yield embedded
+exchange_rate = 1.07    # wstETH/ETH staking yield embedded
 
 [[markets]]
 market_id     = "ETH+wstETH/USDC-Sep26"
