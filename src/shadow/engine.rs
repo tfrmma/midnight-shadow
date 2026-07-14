@@ -102,8 +102,8 @@ fn blended_lif(pos: &Position, shadow_eth: f64) -> f64 {
 // Solving: Δ_min = (D_remaining - max_debt_shadow) / (1 - blended_L × LIF)
 //
 // Infeasible (full liq required) when:
-//   (a) Δ_min >= D_remaining — partial seizure can't restore health
-//   (b) residual collateral after Δ_min < rcf_threshold — dust position, full liq allowed
+//   (a) Δ_min >= D_remaining partial seizure can't restore health
+//   (b) residual collateral after Δ_min < rcf_threshold dust position, full liq allowed
 fn seizure_params(pos: &Position, shadow_eth: f64, bad_debt: f64, lif: f64) -> (f64, bool) {
     let max_d  = pos.max_debt(shadow_eth);
     let total_c = pos.total_collateral(shadow_eth);
