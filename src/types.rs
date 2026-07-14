@@ -6,7 +6,7 @@ pub struct CollateralLeg {
     pub token: String,
     pub amount: f64,
     pub lltv: f64,
-    pub cursor: f64,        // γ — sets LIFmax per whitepaper eq.4
+    pub cursor: f64,        // γ sets LIFmax per whitepaper eq.4
     pub exchange_rate: f64, // price = eth_px * exchange_rate (1.0 for ETH, 1.07 for wstETH, etc.)
 }
 
@@ -29,7 +29,7 @@ impl CollateralLeg {
         self.amount * self.price(eth_px)
     }
 
-    // Downside lag only — upward drift doesn't hurt lenders
+    // Downside lag only upward drift doesn't hurt lenders
     pub fn lag_pct(&self, oracle_eth: f64, shadow_eth: f64) -> f64 {
         let op = self.price(oracle_eth);
         let sp = self.price(shadow_eth);
@@ -44,7 +44,7 @@ pub struct Position {
     pub debt: f64,
     pub legs: Vec<CollateralLeg>,
     pub maturity_ts: u64,
-    pub rcf_threshold: f64, // dust floor in loan token — below this, full liq allowed per whitepaper §4.3
+    pub rcf_threshold: f64, // dust floor in loan token below this, full liq allowed per whitepaper §4.3
 }
 
 impl Position {
@@ -68,7 +68,7 @@ impl Position {
         (self.debt - self.total_collateral(shadow_eth)).max(0.0)
     }
 
-    // worst downside lag across all legs — the oracle that matters is the one driving the cliff
+    // worst downside lag across all legs the oracle that matters is the one driving the cliff
     pub fn worst_lag_pct(&self, oracle_eth: f64, shadow_eth: f64) -> f64 {
         self.legs.iter()
             .map(|l| l.lag_pct(oracle_eth, shadow_eth))
@@ -156,7 +156,7 @@ mod tests {
         CollateralLeg { token: "ETH".into(), amount: 1.0, lltv, cursor, exchange_rate: 1.0 }
     }
 
-    // LIFmax = 1 / (1 - γ·(1 - LLTV)) — whitepaper eq.4
+    // LIFmax = 1 / (1 - γ·(1 - LLTV)) whitepaper eq.4
     #[test]
     fn lif_max_086_050() {
         // 1 / (1 - 0.5 × 0.14) = 1 / 0.93 ≈ 1.07527
@@ -233,7 +233,7 @@ mod tests {
 
     #[test]
     fn weeth_no_bad_debt_at_crash() {
-        // Collateral still covers debt at $2,650 — liquidatable but not underwater
+        // Collateral still covers debt at $2,650 liquidatable but not underwater
         assert_eq!(weeth_pos().bad_debt(2_650.0), 0.0);
     }
 
