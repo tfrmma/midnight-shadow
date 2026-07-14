@@ -18,9 +18,9 @@ MIDNIGHT SHADOW MONITOR  :  latent bad debt quantifier  :  Morpho Midnight
 
  Shadow Position Analysis  [h-LTV = debt / maxDebt = debt / Σ cᵢ·pᵢ·LLTVᵢ]
  Market                Tier    LIF     Oracle h-LTV  Shadow h-LTV  Lag↓    MEV Est.     Status
- weETH/USDC-Sep26      0.860  1.111x  86.01%        103.85%       17.13%  $1,891       ⚡ CLIFF, LIQ PENDING
- wstETH/USDC-Sep26     0.800  1.111x  87.87%        106.47%       17.13%  $5,614       ⚡ CLIFF, LIQ PENDING
- ETH+wstETH/USDC-Sep26 0.860  1.099x  88.20%        106.70%       17.13%  $9,218       ⚡ CLIFF, LIQ PENDING
+ weETH/USDC-Sep26      0.860  1.111x  86.01%        103.85%       17.13%  $1,891       CLIFF, LIQ PENDING
+ wstETH/USDC-Sep26     0.800  1.111x  87.87%        106.47%       17.13%  $5,614       CLIFF, LIQ PENDING
+ ETH+wstETH/USDC-Sep26 0.860  1.099x  88.20%        106.70%       17.13%  $9,218       CLIFF, LIQ PENDING
 ```
 
 Oracle is overdue. Three positions are liquidatable in shadow reality, $16.7K in first-touch MEV on the table, but the protocol sees none of it. When the oracle fires, this window is measured in blocks.
