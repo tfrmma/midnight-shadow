@@ -88,7 +88,7 @@ first_touch_mev = delta_min · (LIF - 1) - gas
 
 **Oracle lag direction:** only downward price moves create cliff risk for lenders. If the oracle lags behind a rally, collateral is worth more than the protocol knows: no risk. The `Lag↓` column shows downward divergence only.
 
-**Dutch auction:** after maturity, any position with outstanding debt is liquidatable regardless of health. LIF starts at 1.0 and ramps linearly to `LIFmax` over 15 minutes (whitepaper §4.4). Positions in this window show `DUTCH Nx` in the MEV column.
+**Dutch auction:** after maturity, any position with outstanding debt is liquidatable regardless of health. LIF starts at 1.0 and ramps linearly to `LIFmax` over 60 minutes (`TIME_TO_MAX_LIF` per `ConstantsLib.sol` — whitepaper stated 15 minutes, on-chain constant is 60). Positions in this window show `DUTCH Nx` in the MEV column.
 
 **Stochastic oracle model:** Chainlink nodes sample and aggregate asynchronously. The sim models oracle fire time as `Uniform[0.6×lag, 1.4×lag]` after the deviation threshold is crossed, which is more realistic than a fixed cliff. The ETA countdown reflects this uncertainty.
 
