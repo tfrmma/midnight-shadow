@@ -1,5 +1,9 @@
 # Contributing
 
+## License note
+
+The Morpho Midnight contracts (`src/Midnight.sol`) are licensed under BUSL-1.1. This monitor is an independent tool that reads on-chain state and does not incorporate any Morpho contract code. The interfaces and libraries under `src/interfaces` and `src/libraries` in the official repo are dual-licensed under GPL-2.0-or-later.
+
 ## Running locally
 
 ```bash
