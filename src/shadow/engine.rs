@@ -5,7 +5,7 @@ use tokio::sync::RwLock;
 use crate::types::{AppState, Position, ShadowAnalysis};
 
 const CHAINLINK_DEVIATION: f64 = 0.005;
-const DUTCH_WINDOW_SECS: f64 = 900.0; // 15 minutes per whitepaper §4.4
+const DUTCH_WINDOW_SECS: f64 = 3_600.0; // TIME_TO_MAX_LIF = 60 minutes, per ConstantsLib.sol
 
 pub struct ShadowEngine {
     gas_cost_usd: f64,
@@ -133,7 +133,8 @@ fn seizure_params(pos: &Position, shadow_eth: f64, bad_debt: f64, lif: f64) -> (
     (delta.max(0.0), dust_triggered)
 }
 
-// Dutch auction: after maturity, LIF starts at 1.0 and ramps to LIFmax over 15 minutes.
+// Dutch auction: after maturity, LIF starts at 1.0 and ramps to LIFmax over 60 minutes.
+// TIME_TO_MAX_LIF = 60 minutes per ConstantsLib.sol — whitepaper said 15, contract says 60.
 // Returns None if not yet overdue.
 fn post_maturity_lif(maturity_ts: u64, lif_max: f64) -> Option<f64> {
     let now = SystemTime::now()
@@ -230,8 +231,8 @@ mod tests {
     fn post_maturity_full_window_returns_lif_max() {
         use std::time::{SystemTime, UNIX_EPOCH};
         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-        // 20 minutes past maturity — beyond the 15min window
-        let lif = post_maturity_lif(now - 1_200, 1.111).unwrap();
+        // 4000s > 3600s (TIME_TO_MAX_LIF = 60min) — past the full window
+        let lif = post_maturity_lif(now - 4_000, 1.111).unwrap();
         assert!((lif - 1.111).abs() < 1e-4);
     }
 
@@ -239,9 +240,9 @@ mod tests {
     fn post_maturity_halfway_linear_ramp() {
         use std::time::{SystemTime, UNIX_EPOCH};
         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-        // 450s = 7.5 min = halfway through 15min window
+        // 1800s = 30 min = halfway through the 60min window
         // expected: 1.0 + (1.111 - 1.0) × 0.5 = 1.0555
-        let lif = post_maturity_lif(now - 450, 1.111).unwrap();
+        let lif = post_maturity_lif(now - 1_800, 1.111).unwrap();
         assert!((lif - 1.0555).abs() < 0.005);
     }
 }
