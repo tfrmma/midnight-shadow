@@ -63,9 +63,14 @@ impl Position {
         if md <= 0.0 { f64::INFINITY } else { self.debt / md }
     }
 
-    // bad debt only when collateral value < debt (not just maxDebt)
+    // Bad debt = debt that can't be recovered even liquidating all collateral at max bonus.
+    // Formula from Midnight.sol liquidate(): badDebt = debt - Σ(cᵢ·pᵢ / LIFᵢ)
+    // Not debt - total_collateral_value — that understates true bad debt.
     pub fn bad_debt(&self, shadow_eth: f64) -> f64 {
-        (self.debt - self.total_collateral(shadow_eth)).max(0.0)
+        let max_recoverable: f64 = self.legs.iter()
+            .map(|l| l.collateral_value(shadow_eth) / l.lif_max())
+            .sum();
+        (self.debt - max_recoverable).max(0.0)
     }
 
     // worst downside lag across all legs the oracle that matters is the one driving the cliff
@@ -122,7 +127,7 @@ pub struct ShadowAnalysis {
     pub oracle_ltv: f64,       // debt / maxDebt(oracle) — > 1.0 = liquidatable
     pub shadow_ltv: f64,       // debt / maxDebt(cex)    — > 1.0 = liquidatable in reality
     pub worst_lag_pct: f64,    // max downside oracle lag across legs
-    pub latent_bad_debt: f64,  // debt - total_collateral(shadow); only > 0 when truly underwater
+    pub latent_bad_debt: f64,  // debt - Σ(cᵢ·pᵢ/LIFᵢ): debt unrecoverable even at max liquidation bonus
     pub min_seizure: f64,      // Δ_min to restore health; may be clipped at remaining_debt
     pub first_touch_mev: f64,  // Δ_min × (LIF - 1) - gas
     pub blended_lif: f64,      // collateral-weighted LIF across legs
